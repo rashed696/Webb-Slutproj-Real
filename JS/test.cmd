@@ -6,7 +6,7 @@ if "%ERRORLEVEL%"=="1" GOTO :stop
 
 wmic cpu get loadpercentage > out.txt
 
-TIMEOUT 1
+TIMEOUT 0.5
 GOTO :loop
 
 :stop

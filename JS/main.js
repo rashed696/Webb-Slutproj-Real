@@ -1,8 +1,33 @@
 const systemInformation = require('systeminformation');
 const { shell } = require('electron');
 
+// Används för att övervaka ändringar på en fil
+const fs = require('fs');
+require('log-timestamp');
 
-https://thisdavej.com/how-to-watch-for-files-changes-in-node-js/#i-need-a-quick-solution
+const cpuInfoFile = "./JS/out.txt";
+console.log("Watching for file changes on" + cpuInfoFile);
+
+let fsWait = false;
+
+// https://thisdavej.com/how-to-watch-for-files-changes-in-node-js/#i-need-a-quick-solution
+fs.watch(cpuInfoFile, (event, fileName) =>
+{
+    if(fileName)
+    {
+        if(fsWait)
+        {
+            return;
+        }
+
+        fsWait = setTimeout(() =>
+        {
+            fsWait = false;
+        }, 100);
+        // console.log(`${fileName} file changed`);
+        readTextFile(cpuInfoFile);
+    }
+});
 
 // let showButton = document.querySelector("#show-button");
 let cpuNameDisplay = document.querySelector("#cpu-name");
@@ -22,8 +47,19 @@ let staticDataToCatch =
 
 
 
-
-
+let dynamicData =
+{
+    "cpu":
+    {
+        "activeLoad": null,
+        "speed": null
+    },
+    "graphics":
+    {
+        "activeLoad": null
+    }
+}
+console.log(dynamicData.cpu);
 
 systemInformation.get(staticDataToCatch).then(data => saveStaticData(data));
 shell.openPath("C:/Users/rashed696/Docs/Webb/Webb-Slutproj-Real/JS/launch_cmd.vbs");
@@ -39,21 +75,46 @@ let saveStaticData = (aData)=>
 let readTextFile = (path)=>
 {
     let rawFile = new XMLHttpRequest();
-    rawFile.open("GET", path, false);
+    rawFile.open("GET", path, true);
     rawFile.addEventListener("readystatechange", ()=>
     {
         if(rawFile.readyState === 4)
         {
             if(rawFile.status === 200 || rawFile.status == 0)
             {
+                // console.log("Size: " + rawFile.getAllResponseHeaders());
                 let allText = rawFile.responseText;
-                alert(allText);
+                if(allText.length > 0)
+                {
+                    dynamicData.cpu.activeLoad = Object.assign({}, {"activeLoad": allText});
+                    let JSON = textToJSON(allText);
+                    
+                    // console.log(textArray);
+                }
             }
         }
     });
     rawFile.send(null);
 }
+//REnsa arrayen och skapa ett JSON objekt
+let textToJSON = (string) =>
+{
+    let textArray = string.split("\r\n");
+    for(let i = textArray.length -1; i > 0; i--)
+    {
+        textArray[i] = textArray[i].trim();
+    }
 
+    console.log(textArray)
+                
+    // let JsonObject = JSON.parse(textFile.responseText);
+    // console.log(JsonObject);
+
+    // for(let i = textArray.length; i > 0; i++)
+    // {
+    //     if(textArray[i].search("\r"))
+    // }
+}
 
 readTextFile('./JS/out.txt');
 
@@ -108,19 +169,19 @@ let readFile = (fileName)=>
  * https://stackoverflow.com/questions/37322862/check-if-electron-app-is-launched-with-admin-privileges-on-windows
  * Hämtad: 11-03-2021 14:00
 */
-let isAdmin = ()=>
-{
-    var exec = require('child_process').exec; 
-    exec('NET SESSION', function(err,so,se) {
-        //   console.log(se.length === 0 ? "admin" : "not admin");
-          se.length === 0 ? true : false;
-        });
-}
+// let isAdmin = ()=>
+// {
+//     var exec = require('child_process').exec; 
+//     exec('NET SESSION', function(err,so,se) {
+//         //   console.log(se.length === 0 ? "admin" : "not admin");
+//           se.length === 0 ? true : false;
+//         });
+// }
 
-if(isAdmin)
-{
-    console.log("Är admin");
-}
+// if(isAdmin)
+// {
+//     console.log("Är admin");
+// }
 
 let updateCPUtext = (newText)=>
 {
