@@ -8,6 +8,11 @@ require('log-timestamp');
 const cpuInfoFile = "./JS/out.txt";
 console.log("Watching for file changes on" + cpuInfoFile);
 
+
+let canvas = document.querySelector("#canvas");
+let ctx = canvas.getContext("2d");
+
+
 let fsWait = false;
 
 // https://thisdavej.com/how-to-watch-for-files-changes-in-node-js/#i-need-a-quick-solution
@@ -25,7 +30,9 @@ fs.watch(cpuInfoFile, (event, fileName) =>
             fsWait = false;
         }, 100);
         // console.log(`${fileName} file changed`);
-        readTextFile(cpuInfoFile);
+        // let text = valueOf(saveDataFromTextFile(cpuInfoFile));
+        saveDataFromTextFile(cpuInfoFile);
+        console.log(dynamicData.cpu.activeLoad);
     }
 });
 
@@ -59,10 +66,16 @@ let dynamicData =
         "activeLoad": null
     }
 }
+
+let outputStaticData = ()=>
+{
+    cpuNameDisplay.textContent = `CPU: ${staticData.cpu.manufacturer + " " + staticData.cpu.brand + " @ " + staticData.cpu.speed} GHz`;
+    gpuNameDisplay.textContent = `GPU: ${staticData.graphics.controllers[0].vendor + " " + staticData.graphics.controllers[0].model}`;
+    memNameDisplay.textContent = `Memory: ${convertBytesToGigabytes(staticData.mem.total)} GB`;
+}
+
 console.log(dynamicData.cpu);
 
-systemInformation.get(staticDataToCatch).then(data => saveStaticData(data));
-shell.openPath("C:/Users/rashed696/Docs/Webb/Webb-Slutproj-Real/JS/launch_cmd.vbs");
 
 let saveStaticData = (aData)=>
 {
@@ -72,7 +85,7 @@ let saveStaticData = (aData)=>
     outputStaticData();
 }
 
-let readTextFile = (path)=>
+let saveDataFromTextFile = (path)=>
 {
     let rawFile = new XMLHttpRequest();
     rawFile.open("GET", path, true);
@@ -86,10 +99,7 @@ let readTextFile = (path)=>
                 let allText = rawFile.responseText;
                 if(allText.length > 0)
                 {
-                    dynamicData.cpu.activeLoad = Object.assign({}, {"activeLoad": allText});
-                    let JSON = textToJSON(allText);
-                    
-                    // console.log(textArray);
+                    dynamicData.cpu.activeLoad = Object.assign({}, {"activeLoad": textToArray(allText)[1]});
                 }
             }
         }
@@ -97,40 +107,43 @@ let readTextFile = (path)=>
     rawFile.send(null);
 }
 //REnsa arrayen och skapa ett JSON objekt
-let textToJSON = (string) =>
+let textToArray = (string) =>
 {
-    let textArray = string.split("\r\n");
+    let textArray = string.split(" \r\n");
     for(let i = textArray.length -1; i > 0; i--)
     {
-        textArray[i] = textArray[i].trim();
+        if (textArray[i] == "")
+        {
+            textArray.splice(i,1);
+        }
+        else
+        {
+            textArray[i] = textArray[i].trim();
+        }
     }
-
-    console.log(textArray)
-                
-    // let JsonObject = JSON.parse(textFile.responseText);
-    // console.log(JsonObject);
-
-    // for(let i = textArray.length; i > 0; i++)
-    // {
-    //     if(textArray[i].search("\r"))
-    // }
+    return textArray;
 }
 
-readTextFile('./JS/out.txt');
+let dynamicDataArray = saveDataFromTextFile('./JS/out.txt');
+// dynamicData.cpu.activeLoad = dynamicDataArray[1];
+console.log(dynamicDataArray);
 
 
-let outputStaticData = ()=>
-{
-    cpuNameDisplay.textContent = `CPU: ${staticData.cpu.manufacturer + " " + staticData.cpu.brand + " @ " + staticData.cpu.speed} GHz`;
-    gpuNameDisplay.textContent = `GPU: ${staticData.graphics.controllers[0].vendor + " " + staticData.graphics.controllers[0].model}`;
-    memNameDisplay.textContent = `Memory: ${convertBytesToGigabytes(staticData.mem.total)} GB`;
-}
+// let findInArray = (stringToFind, aArray)=>
+// {
+//     console.log(aArray.indexOf(stringToFind));
+// }
+
+// findInArray("loadPercentage", dynamicDataArray);
+
 
 let convertBytesToGigabytes = (bytes) =>
 {
     return bytes / 1065825792;
 }
 
+systemInformation.get(staticDataToCatch).then(data => saveStaticData(data));
+shell.openPath("C:/Users/rashed696/Docs/Webb/Webb-Slutproj-Real/JS/launch_cmd.vbs");
 
 
 
@@ -228,7 +241,13 @@ async function getGpuData()
     }
 }
 
+let renderGraphics = ()=>
+{
+    ctx.fillStyle = "#330022";
+    ctx.fill();
+}
 
+renderGraphics();
 
 // getCpuData();
 // getGpuData();
