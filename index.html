@@ -7,16 +7,55 @@
     <link rel="stylesheet" href="CSS/style.css">    
 </head>
     <body>
-        <h1>SystemMonitor</h1>
+
+        <div class="container">
+            <div class="side-panel">
+                <nav class="side-nav">
+                    <h2>Layout</h2>
+                    <ul class="nav-list">
+                        <li class="nav-item active"><a href="#">Easy</a></li>
+                        <li class="nav-item"><a href="">Detailed</a></li>
+                    </ul>
+                </nav>
+                <footer class="side-footer">
+                    <nav>
+                        <ul class="nav-list">
+                            <li class="nav-item">Ting</li>
+                            <li class="nav-item">Inställningar</li>
+                        </ul>
+                    </nav>
+                </footer>
+            </div>
+
+            <div class="main-app">
+                <h1>SystemMonitor</h1>
+                
+
+                <div class="overview">
+                    <div class="dial1">
+                        <div class="dial-colored-circle">
+                            <div class="dial-circle"></div>
+                            
+                            <div class="dial-rect">
+                                <p class="dial-name">CPU Usage</p>
+                                <p class="dial-status">50% / 100%</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <!-- <h1>SystemMonitor</h1> -->
         <!-- <button id="show-button">Show data</button> -->
 
-        <h3 id="cpu-name">CPU: </h3>
-        <p id="cpu-data">CPU usage: </p>
-        <h3 id="gpu-name">GPU: </h3>
-        <h3 id="mem-name">Memory: </h3>
+        <!-- <h3 id="cpu-name">CPU: </h3> -->
+        <!-- <p id="cpu-data">CPU usage: </p> -->
+        <!-- <h3 id="gpu-name">GPU: </h3> -->
+        <!-- <h3 id="mem-name">Memory: </h3> -->
 
-        <canvas id="canvas" width="600" height="400"></canvas>
-
+        <!-- <canvas id="canvas" width="750px" height="400"></canvas> -->
+        <!-- <script src="https://cdn.jsdelivr.net/npm/p5@1.3.1/lib/p5.js"></script> -->
+        
+        </div>
         <script src="JS/main.js"></script>
     </body>
 </html>

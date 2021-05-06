@@ -241,13 +241,13 @@ async function getGpuData()
     }
 }
 
-let renderGraphics = ()=>
-{
-    ctx.fillStyle = "#330022";
-    ctx.fill();
-}
+// let renderGraphics = ()=>
+// {
+//     ctx.fillStyle = "#330022";
+//     ctx.fillRect(2,10,50,50);
+// }
 
-renderGraphics();
+// renderGraphics();
 
 // getCpuData();
 // getGpuData();
