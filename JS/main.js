@@ -1,5 +1,8 @@
 const systemInformation = require('systeminformation');
 const { shell } = require('electron');
+let overviewStatus = document.querySelectorAll('.dial-status');
+
+//Fixa performance issues
 
 // Används för att övervaka ändringar på en fil
 const fs = require('fs');
@@ -9,8 +12,8 @@ const cpuInfoFile = "./JS/out.txt";
 console.log("Watching for file changes on" + cpuInfoFile);
 
 
-let canvas = document.querySelector("#canvas");
-let ctx = canvas.getContext("2d");
+// let canvas = document.querySelector("#canvas");
+// let ctx = canvas.getContext("2d");
 
 
 let fsWait = false;
@@ -28,20 +31,27 @@ fs.watch(cpuInfoFile, (event, fileName) =>
         fsWait = setTimeout(() =>
         {
             fsWait = false;
-        }, 100);
-        // console.log(`${fileName} file changed`);
-        // let text = valueOf(saveDataFromTextFile(cpuInfoFile));
+        }, 2000);
         saveDataFromTextFile(cpuInfoFile);
-        console.log(dynamicData.cpu.activeLoad);
+        // outputDynamicData();
     }
 });
+
+
+// setInterval(() => {
+//     // dynamicData.graphics = Object.assign({}, {"activeLoad":systemInformation.graphics[0]().utilizationGpu});
+
+//     dynamicData = systemInformation.get(dynamicDataToCatch);
+//     outputDynamicData();
+
+// }, 5000);
 
 // let showButton = document.querySelector("#show-button");
 let cpuNameDisplay = document.querySelector("#cpu-name");
 let gpuNameDisplay = document.querySelector("#gpu-name");
 let memNameDisplay = document.querySelector("#mem-name");
 
-let cpuRealTimeDisplay = document.querySelector('#cpu-data');
+// let cpuRealTimeDisplay = document.querySelector('#cpu-data');
 let staticData; 
 let staticDataToCatch = 
 {
@@ -52,29 +62,47 @@ let staticDataToCatch =
     "diskLayout": "*"
 }
 
-
-
-let dynamicData =
+let dynamicDataToCatch = 
 {
-    "cpu":
+    "graphics":"*"
+}
+
+let dynamicCPUData;
+
+let dynamicData;
+// {
+//     "cpu":
+//     {
+//         "activeLoad": null,
+//         "speed": null
+//     },
+//     "graphics":
+//     {
+//         "activeLoad": null
+//     }
+// }
+
+// let outputStaticData = ()=>
+// {
+//     console.log(dynamicData.cpu);
+
+//     // cpuNameDisplay.textContent = `CPU: ${staticData.cpu.manufacturer + " " + staticData.cpu.brand + " @ " + staticData.cpu.speed} GHz`;
+//     // gpuNameDisplay.textContent = `GPU: ${staticData.graphics.controllers[0].vendor + " " + staticData.graphics.controllers[0].model}`;
+//     // memNameDisplay.textContent = `Memory: ${convertBytesToGigabytes(staticData.mem.total)} GB`;
+// }
+
+// console.log(dynamicData.cpu);
+
+let outputDynamicData = () =>
+{
+    if(dynamicCPUData != null)
     {
-        "activeLoad": null,
-        "speed": null
-    },
-    "graphics":
-    {
-        "activeLoad": null
+        overviewStatus[0].textContent = `${dynamicCPUData.activeLoad}%/100%`;
     }
+    // overviewStatus[1].textContent = `${dynamicData.graphics[0].utilizationGpu}% / 100%`;
+    overviewStatus[2].textContent = `xxGB/${convertBytesToGigabytes(staticData.mem.total)}GB`;
+    
 }
-
-let outputStaticData = ()=>
-{
-    cpuNameDisplay.textContent = `CPU: ${staticData.cpu.manufacturer + " " + staticData.cpu.brand + " @ " + staticData.cpu.speed} GHz`;
-    gpuNameDisplay.textContent = `GPU: ${staticData.graphics.controllers[0].vendor + " " + staticData.graphics.controllers[0].model}`;
-    memNameDisplay.textContent = `Memory: ${convertBytesToGigabytes(staticData.mem.total)} GB`;
-}
-
-console.log(dynamicData.cpu);
 
 
 let saveStaticData = (aData)=>
@@ -82,7 +110,7 @@ let saveStaticData = (aData)=>
     staticData = Object.assign({}, aData);
     console.log(staticData);
 
-    outputStaticData();
+    // outputStaticData();
 }
 
 let saveDataFromTextFile = (path)=>
@@ -99,7 +127,7 @@ let saveDataFromTextFile = (path)=>
                 let allText = rawFile.responseText;
                 if(allText.length > 0)
                 {
-                    dynamicData.cpu.activeLoad = Object.assign({}, {"activeLoad": textToArray(allText)[1]});
+                    dynamicCPUData = Object.assign({}, {"activeLoad": textToArray(allText)[1]});
                 }
             }
         }
@@ -110,7 +138,12 @@ let saveDataFromTextFile = (path)=>
 let textToArray = (string) =>
 {
     let textArray = string.split(" \r\n");
-    for(let i = textArray.length -1; i > 0; i--)
+
+    let maxTextArray = textArray.length -1;
+    let i = 0;
+
+    for(i = maxTextArray; i > 0; i--)
+    // for(let i = textArray.length -1; i > 0; i--)
     {
         if (textArray[i] == "")
         {
@@ -124,18 +157,9 @@ let textToArray = (string) =>
     return textArray;
 }
 
-let dynamicDataArray = saveDataFromTextFile('./JS/out.txt');
+// let dynamicDataArray = saveDataFromTextFile('./JS/out.txt');
 // dynamicData.cpu.activeLoad = dynamicDataArray[1];
-console.log(dynamicDataArray);
-
-
-// let findInArray = (stringToFind, aArray)=>
-// {
-//     console.log(aArray.indexOf(stringToFind));
-// }
-
-// findInArray("loadPercentage", dynamicDataArray);
-
+// console.log(dynamicDataArray);
 
 let convertBytesToGigabytes = (bytes) =>
 {
@@ -144,39 +168,6 @@ let convertBytesToGigabytes = (bytes) =>
 
 systemInformation.get(staticDataToCatch).then(data => saveStaticData(data));
 shell.openPath("C:/Users/rashed696/Docs/Webb/Webb-Slutproj-Real/JS/launch_cmd.vbs");
-
-
-
-
-// let cpuInfo;
-// let gpuInfo;
-
-// setInterval(() => {
-//     systemInformation.currentLoad().then(data=> cpuRealTimeDisplay.textContent = `CPU usage: ${data.currentLoadSystem}  %`);
-//     getAccurateCPUusage();
-//   },1000);
-
-// let cmd ''= spawn('C:/Users/rashed696/Docs/Webb/JS/test.cmd');
-
-let getAccurateCPUusage = () =>
-{
-// ''    cmd.stdout.on('data', ()=>
-//     {
-//         console.log(data.toString());
-//     });
-//     cmd.stderr.on('data', () =>
-//     {
-//         console.error(data.toString());
-//     });
-
-    
-}
-
-let readFile = (fileName)=>
-{
-
-}
-
 
 /* Denna funktion är hämtad från stack overflow
  * https://stackoverflow.com/questions/37322862/check-if-electron-app-is-launched-with-admin-privileges-on-windows
@@ -196,15 +187,15 @@ let readFile = (fileName)=>
 //     console.log("Är admin");
 // }
 
-let updateCPUtext = (newText)=>
-{
-    cpuNameDisplay.textContent = newText; 
-}
+// let updateCPUtext = (newText)=>
+// {
+//     cpuNameDisplay.textContent = newText; 
+// }
 
-let updateGPUtext = (newText)=>
-{
-    gpuNameDisplay.textContent = newText; 
-}
+// let updateGPUtext = (newText)=>
+// {
+//     gpuNameDisplay.textContent = newText; 
+// }
 
 async function getCpuData()
 {

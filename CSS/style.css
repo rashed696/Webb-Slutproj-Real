@@ -88,10 +88,27 @@ h2
 
 .overview
 {
-    grid-item: "ovvw";
+    /* grid-item: "ovvw"; */
     width: 35rem;
     height: 8rem;
     background-color: #b6b6b6;
+
+    display: flex;
+    justify-content: space-around;
+
+}
+/* .dial-circle
+{
+    padding: 10px;
+} */
+
+.dial-colored-circle
+{
+    width: 6.5rem;
+    height: 6.5rem;
+    border-radius: 50%;
+
+    background: conic-gradient(from 180deg at 50% 50%, #009FB0 -90deg, #009FB0 90deg, #00C49E 270deg, #009FB0 450deg);
 }
 
 .dial-circle
@@ -101,9 +118,10 @@ h2
     border-radius: 50%;
     background-color: #333;
 
-    position: absolute;
+    position: relative;
     /* left: .5rem; */
-    /* left: 1px; */
+    left: 0.25rem;
+    top: 0.25rem;
 
     /* top: 6.5rem; */
 }
@@ -125,14 +143,7 @@ h2
     align-items: center;
 }
 
-.dial-colored-circle
-{
-    width: 6.5rem;
-    height: 6.5rem;
-    border-radius: 50%;
 
-    background-color: blue;
-}
 
 .dial-status 
 {
