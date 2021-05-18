@@ -31,20 +31,14 @@ fs.watch(cpuInfoFile, (event, fileName) =>
         fsWait = setTimeout(() =>
         {
             fsWait = false;
-        }, 2000);
+        }, 1000);
+
+        // console.log(event);
+
         saveDataFromTextFile(cpuInfoFile);
-        // outputDynamicData();
+        outputDynamicData();
     }
 });
-
-
-// setInterval(() => {
-//     // dynamicData.graphics = Object.assign({}, {"activeLoad":systemInformation.graphics[0]().utilizationGpu});
-
-//     dynamicData = systemInformation.get(dynamicDataToCatch);
-//     outputDynamicData();
-
-// }, 5000);
 
 // let showButton = document.querySelector("#show-button");
 let cpuNameDisplay = document.querySelector("#cpu-name");
@@ -91,16 +85,17 @@ let dynamicData;
 //     // memNameDisplay.textContent = `Memory: ${convertBytesToGigabytes(staticData.mem.total)} GB`;
 // }
 
-// console.log(dynamicData.cpu);
-
 let outputDynamicData = () =>
 {
-    if(dynamicCPUData != null)
+    if(dynamicData != undefined)
     {
-        overviewStatus[0].textContent = `${dynamicCPUData.activeLoad}%/100%`;
+        overviewStatus[0].textContent = `${dynamicData.cpu.activeLoad}%/100%`;
+
+        // overviewStatus[1].textContent = `${dynamicData.graphics[0].utilizationGpu}% / 100%`;
+
+        // overviewStatus[2].textContent = `xxGB/${convertBytesToGigabytes(staticData.mem.total)}GB`;
     }
-    // overviewStatus[1].textContent = `${dynamicData.graphics[0].utilizationGpu}% / 100%`;
-    overviewStatus[2].textContent = `xxGB/${convertBytesToGigabytes(staticData.mem.total)}GB`;
+
     
 }
 
@@ -125,10 +120,22 @@ let saveDataFromTextFile = (path)=>
             {
                 // console.log("Size: " + rawFile.getAllResponseHeaders());
                 let allText = rawFile.responseText;
-                if(allText.length > 0)
+
+                let textArray = textToArray(allText);
+                let rowToRead = textArray.length - 1;
+
+                if(textArray.length >= 20)
                 {
-                    dynamicCPUData = Object.assign({}, {"activeLoad": textToArray(allText)[1]});
+                    shell.openPath("C:/Users/rashed696/Docs/Webb/Webb-Slutproj-Real/JS/launch_clear_cmd.vbs");
+                    rowToRead = 1;
                 }
+                if(textArray.length > 0)
+                {
+                    dynamicData = Object.assign({}, {"cpu": {"activeLoad": textArray[rowToRead]}});
+                    // console.log(textArray[rowToRead], rowToRead+1);
+                    // rowToRead += 2;
+                }
+
             }
         }
     });
@@ -156,10 +163,6 @@ let textToArray = (string) =>
     }
     return textArray;
 }
-
-// let dynamicDataArray = saveDataFromTextFile('./JS/out.txt');
-// dynamicData.cpu.activeLoad = dynamicDataArray[1];
-// console.log(dynamicDataArray);
 
 let convertBytesToGigabytes = (bytes) =>
 {
@@ -206,7 +209,8 @@ async function getCpuData()
         console.log('CPU info: ');
         console.log(data);
         cpuInfo = Object.assign({}, data);
-        updateCPUtext(`CPU: ${cpuInfo.manufacturer} ${cpuInfo.brand}`);    
+        
+        // updateCPUtext(`CPU: ${cpuInfo.manufacturer} ${cpuInfo.brand}`);    
     }
     catch (e)
     {
@@ -231,14 +235,6 @@ async function getGpuData()
         console.error(e);
     }
 }
-
-// let renderGraphics = ()=>
-// {
-//     ctx.fillStyle = "#330022";
-//     ctx.fillRect(2,10,50,50);
-// }
-
-// renderGraphics();
 
 // getCpuData();
 // getGpuData();
