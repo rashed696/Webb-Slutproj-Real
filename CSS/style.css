@@ -57,9 +57,9 @@ body
 }
 
 
-.active > a
+.active
 {
-    color:#fff;
+    color:#1c8612;
 }
 
 h1
@@ -129,7 +129,13 @@ h2
     left: 0.25rem;
     top: 0.25rem;
 
-    /* top: 6.5rem; */
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-direction: column;
+
+    transform: rotate(-90deg);
+    
 }
 
 .dial-rect
@@ -147,11 +153,29 @@ h2
     flex-direction: column;
     justify-content: center;
     align-items: center;
+
+    z-index: 0;
 }
-
-
 
 .dial-status 
 {
     font-size: 12px;
+}
+.hand
+{
+    width: 0; 
+    height: 0; 
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    
+    border-bottom: 10px solid #41ff61;
+    z-index: 100;
+}
+
+.line
+{
+    width: 3px;
+    height: 2.3rem;
+    background-color: #41ff61;
+    z-index: 1;
 }

@@ -1,11 +1,13 @@
 const systemInformation = require('systeminformation');
 const { shell } = require('electron');
 let overviewStatus = document.querySelectorAll('.dial-status');
+let overviewDial = document.querySelectorAll('.dial-circle');
 
 //Fixa performance issues
 
 // Används för att övervaka ändringar på en fil
 const fs = require('fs');
+const { isRegExp } = require('util');
 require('log-timestamp');
 
 const cpuInfoFile = "./JS/out.txt";
@@ -40,6 +42,22 @@ fs.watch(cpuInfoFile, (event, fileName) =>
     }
 });
 
+let getDynamicData = () =>
+{
+    setInterval(()=>
+    {
+        systemInformation.get(dynamicDataToCatch).then(data => saveDynamicData(data));
+    }, 1000);
+}
+
+
+let saveDynamicData = (dataToSave)=>
+{
+    dynamicData = Object.assign(dynamicData, dataToSave);
+}
+
+
+
 // let showButton = document.querySelector("#show-button");
 let cpuNameDisplay = document.querySelector("#cpu-name");
 let gpuNameDisplay = document.querySelector("#gpu-name");
@@ -58,53 +76,72 @@ let staticDataToCatch =
 
 let dynamicDataToCatch = 
 {
-    "graphics":"*"
+    // "graphics":"*",
+    "mem":"active"
 }
 
-let dynamicCPUData;
-
-let dynamicData;
-// {
-//     "cpu":
-//     {
-//         "activeLoad": null,
-//         "speed": null
-//     },
-//     "graphics":
-//     {
-//         "activeLoad": null
-//     }
-// }
-
-// let outputStaticData = ()=>
-// {
-//     console.log(dynamicData.cpu);
-
-//     // cpuNameDisplay.textContent = `CPU: ${staticData.cpu.manufacturer + " " + staticData.cpu.brand + " @ " + staticData.cpu.speed} GHz`;
-//     // gpuNameDisplay.textContent = `GPU: ${staticData.graphics.controllers[0].vendor + " " + staticData.graphics.controllers[0].model}`;
-//     // memNameDisplay.textContent = `Memory: ${convertBytesToGigabytes(staticData.mem.total)} GB`;
-// }
+let dynamicData = 
+{
+    "cpu":
+    {
+        "activeLoad": null,
+        "speed": null
+    },
+    "graphics":
+    {
+        "activeLoad": null
+    },
+    "mem":
+    {
+        "total": null
+    }
+}
 
 let outputDynamicData = () =>
 {
-    if(dynamicData != undefined)
+    if(dynamicData)
     {
-        overviewStatus[0].textContent = `${dynamicData.cpu.activeLoad}%/100%`;
+        // console.log(dynamicData);
+        if(dynamicData.cpu != null)
+        {
+            // overviewDial[0]
+            // console.log(overviewDial[0].style.transform);
+            overviewStatus[0].textContent = `${dynamicData.cpu.activeLoad}%/100%`;
+        }
+        if(dynamicData.graphics != null)
+        {
+            if(dynamicData.graphics == false)
+            {
+                overviewStatus[1].textContent = "GPU not supported";
+            }
+            else
+            {
+                overviewStatus[1].textContent = `${dynamicData.graphics[0].utilizationGpu}% / 100%`;
+            }
+        }
 
-        // overviewStatus[1].textContent = `${dynamicData.graphics[0].utilizationGpu}% / 100%`;
 
-        // overviewStatus[2].textContent = `xxGB/${convertBytesToGigabytes(staticData.mem.total)}GB`;
-    }
+        if(dynamicData.mem.active)
+        {
+            overviewStatus[2].textContent = `${convertBytesToGigabytes(dynamicData.mem.active).toFixed(1)}/${convertBytesToGigabytes(staticData.mem.total)}GB`;
 
-    
+        }
+    }  
 }
-
 
 let saveStaticData = (aData)=>
 {
     staticData = Object.assign({}, aData);
     console.log(staticData);
 
+    if(staticData.graphics.controllers[0].vendor.toLowerCase().includes("nvidia"))
+    {
+        dynamicDataToCatch = Object.assign(dynamicDataToCatch, {"graphics": "*"});
+    }
+    else
+    {
+        dynamicData = Object.assign(dynamicData, {"graphics": false})
+    }
     // outputStaticData();
 }
 
@@ -131,9 +168,7 @@ let saveDataFromTextFile = (path)=>
                 }
                 if(textArray.length > 0)
                 {
-                    dynamicData = Object.assign({}, {"cpu": {"activeLoad": textArray[rowToRead]}});
-                    // console.log(textArray[rowToRead], rowToRead+1);
-                    // rowToRead += 2;
+                    dynamicData = Object.assign({}, {"cpu": {"activeLoad": parseInt(textArray[rowToRead])}});
                 }
 
             }
@@ -141,7 +176,7 @@ let saveDataFromTextFile = (path)=>
     });
     rawFile.send(null);
 }
-//REnsa arrayen och skapa ett JSON objekt
+//Rensa arrayen och skapa ett JSON objekt
 let textToArray = (string) =>
 {
     let textArray = string.split(" \r\n");
@@ -150,7 +185,6 @@ let textToArray = (string) =>
     let i = 0;
 
     for(i = maxTextArray; i > 0; i--)
-    // for(let i = textArray.length -1; i > 0; i--)
     {
         if (textArray[i] == "")
         {
@@ -170,74 +204,8 @@ let convertBytesToGigabytes = (bytes) =>
 }
 
 systemInformation.get(staticDataToCatch).then(data => saveStaticData(data));
+getDynamicData();
 shell.openPath("C:/Users/rashed696/Docs/Webb/Webb-Slutproj-Real/JS/launch_cmd.vbs");
-
-/* Denna funktion är hämtad från stack overflow
- * https://stackoverflow.com/questions/37322862/check-if-electron-app-is-launched-with-admin-privileges-on-windows
- * Hämtad: 11-03-2021 14:00
-*/
-// let isAdmin = ()=>
-// {
-//     var exec = require('child_process').exec; 
-//     exec('NET SESSION', function(err,so,se) {
-//         //   console.log(se.length === 0 ? "admin" : "not admin");
-//           se.length === 0 ? true : false;
-//         });
-// }
-
-// if(isAdmin)
-// {
-//     console.log("Är admin");
-// }
-
-// let updateCPUtext = (newText)=>
-// {
-//     cpuNameDisplay.textContent = newText; 
-// }
-
-// let updateGPUtext = (newText)=>
-// {
-//     gpuNameDisplay.textContent = newText; 
-// }
-
-async function getCpuData()
-{
-    cpuNameDisplay.textContent = ("CPU: Retrieving CPU information...");
-    try 
-    {
-        const data = await systemInformation.cpu();
-        console.log('CPU info: ');
-        console.log(data);
-        cpuInfo = Object.assign({}, data);
-        
-        // updateCPUtext(`CPU: ${cpuInfo.manufacturer} ${cpuInfo.brand}`);    
-    }
-    catch (e)
-    {
-        console.error(e);
-    }
-    systemInformation.cpuCurrentSpeed().then(data => cpuNameDisplay.textContent += ` @ ${data.max} GHz`);
-}
-
-async function getGpuData()
-{
-    gpuNameDisplay.textContent = ("GPU: Retrieving GPU information...");
-    try 
-    {
-        const data = await systemInformation.graphics();
-        console.log('GPU info: ');
-        console.log(data);
-        gpuInfo = Object.assign({}, data);
-        updateGPUtext(`GPU: ${gpuInfo.controllers[0].model}`);
-    }
-    catch (e)
-    {
-        console.error(e);
-    }
-}
-
-// getCpuData();
-// getGpuData();
 
 
 
