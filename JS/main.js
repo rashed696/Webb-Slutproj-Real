@@ -3,11 +3,10 @@ const { shell } = require('electron');
 let overviewStatus = document.querySelectorAll('.dial-status');
 let overviewDial = document.querySelectorAll('.dial-circle');
 
-//Fixa performance issues
+// let styleDocument = document.documentElement.style;
 
 // Används för att övervaka ändringar på en fil
 const fs = require('fs');
-const { isRegExp } = require('util');
 require('log-timestamp');
 
 const cpuInfoFile = "./JS/out.txt";
@@ -59,9 +58,9 @@ let saveDynamicData = (dataToSave)=>
 
 
 // let showButton = document.querySelector("#show-button");
-let cpuNameDisplay = document.querySelector("#cpu-name");
-let gpuNameDisplay = document.querySelector("#gpu-name");
-let memNameDisplay = document.querySelector("#mem-name");
+// let cpuNameDisplay = document.querySelector("#cpu-name");
+// let gpuNameDisplay = document.querySelector("#gpu-name");
+// let memNameDisplay = document.querySelector("#mem-name");
 
 // let cpuRealTimeDisplay = document.querySelector('#cpu-data');
 let staticData; 
@@ -104,8 +103,8 @@ let outputDynamicData = () =>
         // console.log(dynamicData);
         if(dynamicData.cpu != null)
         {
-            // overviewDial[0]
-            // console.log(overviewDial[0].style.transform);
+            rotate(overviewDial[0], dynamicData.cpu.activeLoad);
+            console.log("CPU: "+dynamicData.cpu.activeLoad)
             overviewStatus[0].textContent = `${dynamicData.cpu.activeLoad}%/100%`;
         }
         if(dynamicData.graphics != null)
@@ -116,6 +115,7 @@ let outputDynamicData = () =>
             }
             else
             {
+                rotate(overviewDial[1], dynamicData.graphics[0].utilizationGpu)
                 overviewStatus[1].textContent = `${dynamicData.graphics[0].utilizationGpu}% / 100%`;
             }
         }
@@ -123,8 +123,10 @@ let outputDynamicData = () =>
 
         if(dynamicData.mem.active)
         {
+            let activeLoad = parseInt((dynamicData.mem.active / staticData.mem.total)*100);
+            console.log(activeLoad);
+            rotate(overviewDial[2], activeLoad);
             overviewStatus[2].textContent = `${convertBytesToGigabytes(dynamicData.mem.active).toFixed(1)}/${convertBytesToGigabytes(staticData.mem.total)}GB`;
-
         }
     }  
 }
@@ -207,8 +209,13 @@ systemInformation.get(staticDataToCatch).then(data => saveStaticData(data));
 getDynamicData();
 shell.openPath("C:/Users/rashed696/Docs/Webb/Webb-Slutproj-Real/JS/launch_cmd.vbs");
 
+let rotate = (element, procentage)=>
+{
+    let goalAngle = remapToDegree(procentage);
+    element.style.transform = "rotate(" + goalAngle + "deg)";
+}
 
-
-
-
-
+let remapToDegree = (aProcentage)=>
+{
+    return parseInt(-90 + ((aProcentage/100) * 180));
+}
